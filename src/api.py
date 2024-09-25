@@ -4,7 +4,7 @@ from logger import*
 import time
 import aiohttp
 
-rate_limiter = Limiter(1000/1)
+rate_limiter = Limiter(40/1)
 
 class Endpoint:
     def __init__(self, base_url):

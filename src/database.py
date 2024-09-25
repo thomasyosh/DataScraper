@@ -67,8 +67,8 @@ class AddressResult(Base):
 
 Base.metadata.create_all(engine)
 
-def readAllAddressMaster() -> list[AddressMaster]:
-    result = session.query(AddressMaster).all()
+def readAllAddressMaster() -> list[PoiMaster]:
+    result = session.query(PoiMaster).all()
     session.close()
     return result
 
@@ -113,11 +113,16 @@ def caseDetailWithCountLessThan(recordsPerId : int) -> list[PoiMaster]:
     return result
 
 def getPoiMasterByIds(ids : list[str]) -> list[PoiMaster]:
-    result = session.query(PoiMaster)\
-        .filter(PoiMaster.id.in_(ids))\
-            .all()
-    session.close()
-    return result
+    batches = []
+    batchSize = 20000
+    for i in range(0, len(ids), batchSize):
+        chunk = ids[i:i + batchSize]
+        result = session.query(PoiMaster)\
+            .filter(PoiMaster.id.in_(chunk))\
+                .all()
+        session.close()
+        batches.extend(result)
+    return batches
 
 def getCaseWithoutResult() -> list[AddressResult]:
     result = session.query(AddressResult)\
@@ -147,6 +152,9 @@ def updateAddressResultByEndpoints(endpoint : str,
     session.commit()
     session.close()
 
+def insertToMaster(dataframe: pd.DataFrame) -> None:
+    dataframe.to_sql(name="poi_master", if_exists="append", con=engine, index=False)
+
 def insertExcelToMaster(dateframe : pd.DataFrame) -> None:
     for index, row in dateframe.iterrows():
         chineseAddress = AddressMaster(address = row["name_tc"],
@@ -172,34 +180,34 @@ def insertExcelToMaster(dateframe : pd.DataFrame) -> None:
 def insertExcelToPoiMaster(dataframe : pd.DataFrame) -> None:
     english_df = dataframe[[
         "POIID", 
-        "ENAME", 
+        # "ENAME", 
         "EADDRESS", 
-        "EFLOOR",
-        "EUNIT",
-        "BLDGCSUID",
-        "TELNO",
-        "FAXNO", 
-        "WEBSITE",
-        "STATUS",
-        "MDATE",
-        "TYPE",
+        # "EFLOOR",
+        # "EUNIT",
+        "buildingcsuid",
+        # "TELNO",
+        # "FAXNO", 
+        # "WEBSITE",
+        # "STATUS",
+        # "MDATE",
+        # "TYPE",
         "EASTING",
         "NORTHING"
         ]].copy()
 
     chinese_df = dataframe[[
         "POIID",
-        "CNAME",
+        # "CNAME",
         "CADDRESS",
-        "CFLOOR",
-        "CUNIT",
-        "BLDGCSUID",
-        "TELNO",
-        "FAXNO", 
-        "WEBSITE",
-        "STATUS",
-        "MDATE",
-        "TYPE",
+        # "CFLOOR",
+        # "CUNIT",
+        "buildingcsuid",
+        # "TELNO",
+        # "FAXNO", 
+        # "WEBSITE",
+        # "STATUS",
+        # "MDATE",
+        # "TYPE",
         "EASTING",
         "NORTHING"
     ]].copy()
@@ -209,10 +217,13 @@ def insertExcelToPoiMaster(dataframe : pd.DataFrame) -> None:
 
     english_df['is_chinese'] = False
     chinese_df['is_chinese'] = True
+    english_df = english_df.drop_duplicates(subset=["ADDRESS"], keep="first")
+    chinese_df = chinese_df.drop_duplicates(subset=["ADDRESS"], keep="first")
     result_df = pd.concat([english_df, chinese_df], ignore_index=True)
     result_df['POIID'] = pd.Categorical(result_df['POIID'], categories=english_df['POIID'], ordered=True)
     result_df = result_df.sort_values('POIID').reset_index(drop=True)
 
     result_df.columns = map(str.lower, result_df.columns)
-    result_df = result_df.rename(columns={"poiid":"id","type":"poi_type", "bldgcsuid": "csuid"})
+    result_df = result_df.rename(columns={"poiid":"id","type":"poi_type", "buildingcsuid": "csuid"})
+    # result_df = result_df.drop_duplicates(subset=["address"], keep="first")
     result_df.to_sql(name="poi_master", if_exists="append", con=engine, index=False)

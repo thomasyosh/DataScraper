@@ -34,7 +34,7 @@ async def fetchData(engine, endpoints, client, rows):
                 is_chinese=row.is_chinese,
                 create_date=datetime.datetime.now(),
             ).on_conflict_do_update(
-                index_elements=['id', 'endpoint', 'is_chinese'],
+                index_elements=['id','endpoint', 'is_chinese'],
                 set_=update_values
             )
         
@@ -179,42 +179,15 @@ def getDummyData() ->json:
 
         
 if __name__ == "__main__":
-    # asyncio.run(post_request())
-    # data = readAllAddressMaster()[0]
-    # datafile = "datasource/POI_20240311_NON_DEL.xlsx"
-    # df = pd.read_excel(datafile, engine="calamine")
-    # df = pd.DataFrame(getDummyData()["data"])
+    datafile = "datasource/poi_master.xlsx"
+    df = pd.read_excel(datafile, engine="calamine")
+    insertToMaster(df)
     # insertExcelToPoiMaster(df)
-    # ids = getDistinctAddressId()
-    # getAllDataframe(5, ids)
-    # df = getDataframeByAddressId("73b6439f85194a64a890bb5b53e95aff",5)
-    # for column in df.columns:
-    #     if column == 'addressId'\
-    #         or column == 'isChineseAddress'\
-    #             or column == "inputAddress"\
-    #                 or column == "inputEasting"\
-    #                     or column == "inputNorthing":
-    #         df[column] = df[column].ffill()
-    #     else:
-    #         df[column] = df[column].fillna('Not applicable')
-    
-    # chinAddr = df[(df["isChineseAddress"] == True)]
-    # engAddr = df[(df["isChineseAddress"] == False)]
-    
-    # # df["addressId"].fillna(method='ffill', inplace=True)
-    # # df["isChineseAddress"].fillna(method='ffill', inplace=True)
-    # # df["inputAddress"].fillna(method='ffill', inplace=True)
-    # # df["inputAddress"].fillna(method='ffill', inplace=True)
-    # print(df["geoDataChinAddress"], df["addressSearchChinAddress"])
-    # with pd.ExcelWriter("output.xlsx") as writer:
-    #     chinAddr.to_excel(writer, sheet_name = "chinAddress", freeze_panes=(1, 1))
-    #     engAddr.to_excel(writer, sheet_name = "engAddress", freeze_panes=(1, 1))
-    #     df.to_excel(writer, sheet_name = "all", freeze_panes=(1, 1))
+    # rows = readAllAddressMaster()
+    rows = getRemainingMaster()
+    # ids = caseDetailWithCountLessThan(4)
+    # rows = getPoiMasterByIds(ids)
     # rows = getCaseWithoutResult()
-    # updateAddressResultByEndpoints("https://geodata.gov.hk/gs/api/v1.0.0/locationSearc","https://geodata.gov.hk/gs/api/v1.0.0/locationSearch")
-    # rows = getRemainingMaster()
-    ids = caseDetailWithCountLessThan(4)
-    rows = getPoiMasterByIds(ids)
     endpoints = [Als(),GeoData()]
     # endpoints = [AddressSearch()]
     asyncio.run(main(rows, endpoints))
