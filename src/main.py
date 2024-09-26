@@ -181,10 +181,10 @@ def getDummyData() ->json:
 if __name__ == "__main__":
     datafile = "datasource/poi_master.xlsx"
     df = pd.read_excel(datafile, engine="calamine")
-    insertToMaster(df)
+    # insertToMaster(df)
     # insertExcelToPoiMaster(df)
-    # rows = readAllAddressMaster()
-    rows = getRemainingMaster()
+    rows = readAllAddressMaster()
+    # rows = getRemainingMaster()
     # ids = caseDetailWithCountLessThan(4)
     # rows = getPoiMasterByIds(ids)
     # rows = getCaseWithoutResult()
