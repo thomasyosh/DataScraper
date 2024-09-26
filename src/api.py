@@ -39,8 +39,9 @@ class Endpoint:
                         data = await resp.json()
                         if self.base_url == "https://geodata.gov.hk/gs/api/v1.0.0/locationSearch":
                             for _ in data:
-                                _["nameEN"] = re.sub(r"\n","****",_["nameEN"])
-                                _["addressEN"] = re.sub(r"\n","****",_["addressEN"])
+                                re.sub(r"\n","****",_["nameEN"])
+                                re.sub(r"\n","****",_["addressEN"])
+                                re.sub("[^\x20-\x7E]", "", _['addressEN'])
 
                         logging.info(f"{now:.0f}s: {self.base_url} got {resp.status} querying {address}")
                     else:
