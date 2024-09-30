@@ -188,6 +188,6 @@ if __name__ == "__main__":
     # ids = caseDetailWithCountLessThan(4)
     # rows = getPoiMasterByIds(ids)
     # rows = getCaseWithoutResult()
-    endpoints = [Als(),GeoData()]
+    # endpoints = [Als(),GeoData()]
     # endpoints = [AddressSearch()]
     asyncio.run(main(rows, endpoints))

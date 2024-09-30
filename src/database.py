@@ -219,9 +219,11 @@ def insertExcelToPoiMaster(dataframe : pd.DataFrame) -> None:
     chinese_df['is_chinese'] = True
     english_df = english_df.drop_duplicates(subset=["ADDRESS"], keep="first")
     chinese_df = chinese_df.drop_duplicates(subset=["ADDRESS"], keep="first")
+    english_df = english_df[english_df["ADDRESS"].notna()]
+    chinese_df = chinese_df[chinese_df["ADDRESS"].notna()]
     result_df = pd.concat([english_df, chinese_df], ignore_index=True)
-    result_df['POIID'] = pd.Categorical(result_df['POIID'], categories=english_df['POIID'], ordered=True)
-    result_df = result_df.sort_values('POIID').reset_index(drop=True)
+    # result_df['POIID'] = pd.Categorical(result_df['POIID'], categories=english_df['POIID'], ordered=True)
+    # result_df = result_df.sort_values('POIID').reset_index(drop=True)
 
     result_df.columns = map(str.lower, result_df.columns)
     result_df = result_df.rename(columns={"poiid":"id","type":"poi_type", "buildingcsuid": "csuid"})
