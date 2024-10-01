@@ -6,11 +6,13 @@ from sqlalchemy_guid import GUID
 import uuid
 import datetime
 import pandas as pd
+import sqlite3
 
 
 Base = declarative_base()
 
-engine = create_engine("sqlite:///results.db?charset=utf8mb4",
+DATABASE_URL = "results.db"
+engine = create_engine(f"sqlite:///{DATABASE_URL}?charset=utf8mb4",
                        echo = False,
                        json_serializer = lambda obj: 
                            json.dumps(obj,
@@ -227,3 +229,34 @@ def insertExcelToPoiMaster(dataframe : pd.DataFrame) -> None:
     result_df = result_df.rename(columns={"poiid":"id","type":"poi_type", "buildingcsuid": "csuid"})
     # result_df = result_df.drop_duplicates(subset=["address"], keep="first")
     result_df.to_sql(name="poi_master", if_exists="append", con=engine, index=False)
+    
+    
+def createResultTable()->None:
+    with open("sql/chin_result.sql", "r") as sql_file:
+        chinResultSql = sql_file.read()
+    
+    with open("sql/eng_result.sql", "r") as sql_file:
+        engResultSql = sql_file.read()
+        
+    with open("sql/chin_api_performance.sql", "r") as sql_file:
+        chinApiPerformanceSql = sql_file.read()
+    
+    with open("sql/eng_api_performance.sql", "r") as sql_file:
+        engApiPerformanceSql = sql_file.read()
+        
+    with open("sql/chin_summary.sql", "r") as sql_file:
+        chinSummarySql = sql_file.read()
+
+    with open("sql/eng_summary.sql", "r") as sql_file:
+        engSummarySql = sql_file.read()
+
+    db = sqlite3.connect(DATABASE_URL)
+    cursor = db.cursor()
+    cursor.executescript(chinResultSql)
+    cursor.executescript(engResultSql)
+    cursor.executescript(chinApiPerformanceSql)
+    cursor.executescript(engApiPerformanceSql)
+    cursor.executescript(chinSummarySql)
+    cursor.executescript(engSummarySql)
+    db.commit()
+    db.close()
